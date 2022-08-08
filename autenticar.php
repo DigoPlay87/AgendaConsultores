@@ -1,0 +1,46 @@
+<?php
+	session_cache_limiter('private');
+	$cache_limiter = session_cache_limiter();
+
+	/* define o prazo do cache em 120 minutos */
+	session_cache_expire(60);
+	$cache_expire = session_cache_expire();
+	/* inicia a sessão */
+
+	@session_start(); 
+	require_once("conexao.php");
+
+	$username = $_POST['username'];
+	$password = md5($_POST['password']);
+	// $senha = $_POST['senha'];
+
+	$query = $pdo->query("SELECT * FROM usuarios WHERE (email = '$username' OR cpf = '$username') AND senha = '$password' ");
+	$res = $query->fetchAll(PDO::FETCH_ASSOC);
+	$total_reg = @count($res);
+
+	if($total_reg > 0){
+		$_SESSION['id_usuario'] = $res[0]['id'];
+		$_SESSION['nome_usuario'] = $res[0]['nome'];
+		$_SESSION['email_usuario'] = $res[0]['email'];
+		$_SESSION['cpf_usuario'] = $res[0]['cpf'];
+		$_SESSION['nivel_usuario'] = $res[0]['nivel'];
+
+		//inserir log
+		$tabela = 'usuarios';
+		$acao = 'login';
+		$descricao = 'Fez Login';
+		require_once("painel/inserir-logs.php");
+
+		echo "<script>window.location='painel'</script>";
+	}else{
+		echo "<script>window.alert('Dados Incorretos');</script>";
+		echo "<script>window.location='index.php'</script>";
+	}	
+
+	// //inserir log de logout pelo sistema
+	// $tabela = 'usuarios';
+	// $acao = 'logout';
+	// $descricao = 'Tempo Inoperante atingido';
+	// require_once("painel/inserir-logs.php");	
+?>
+
